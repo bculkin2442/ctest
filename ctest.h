@@ -3,7 +3,7 @@
  *  CTest header file
  *
  *  Created by Benjamin on 5/31/14.
- *  Copyright 2014 __MyCompanyName__. All rights reserved.
+ *  
  *
  */
 #ifndef CTEST_H 
@@ -11,6 +11,11 @@
 // Test function definition. A test function will succede on any positive result including zero,
 //   but any non-zero positive number will be given as a warning.
 typedef int (*testfun_t)(void);
+
+// Lookup function definition.
+//	Defines a function for resolving a integer
+//	to an explanatory string
+typedef char* (*lookupfun_t)(int);
 
 // Contains basic identifying information about a test
 //  as well as the test itself

@@ -11,3 +11,11 @@ testx: ctest
 
 clean:
 	rm *.o *.a test
+
+install:
+	cp libctest.a /usr/local/lib
+	cp ctest.h /usr/local/include
+
+deinstall:
+	rm /usr/local/lib/libctest.a
+	rm /usr/local/include/ctest.h
