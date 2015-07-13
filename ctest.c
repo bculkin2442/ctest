@@ -14,7 +14,7 @@
 test_t* create_test(char* name, testfun_t test) {
 	test_t* new = malloc(sizeof(test_t));
 	if(new == NULL) {
-		printf("Failed allocating new test named %s. Exiting now", name);
+		printf("Failed allocating new test named %s. Exiting now\n", name);
 		exit(EXIT_FAILURE);
 	}
 	new->name = name;
@@ -25,13 +25,13 @@ test_t* create_test(char* name, testfun_t test) {
 ctest_t* ctest_init(char* name,FILE * outp) {
 	ctest_t* new = malloc(sizeof(ctest_t));
 	if(new == NULL) {
-		printf("Failed allocating harness for %s. Exiting now", name);
+		printf("Failed allocating harness for %s. Exiting now\n", name);
 		exit(EXIT_FAILURE);
 	}
 	new->mandatory = malloc(sizeof(holder_t));\
 	new->optional = malloc(sizeof(holder_t));
 	if(new->mandatory == NULL || new->optional == NULL) {
-		printf("Failed allocating test holder for harness %s. Exiting now", name);
+		printf("Failed allocating test holder for harness %s. Exiting now\n", name);
 		exit(EXIT_FAILURE);
 	}
 	new->mandatory->base = new->mandatory;
@@ -48,7 +48,7 @@ void add_mandatory(ctest_t* harn,test_t* test) {
 		if(harn->mandatory->next == NULL) {
 			harn->mandatory->next = malloc(sizeof(holder_t));
 			if(harn->mandatory->next == NULL) {
-				printf("Error allocating new holder for test %s in harness %s. Exiting now", test->name, harn->name);
+				printf("Error allocating new holder for test %s in harness %s. Exiting now\n", test->name, harn->name);
 				exit(EXIT_FAILURE);
 			}
 			// Switch the current test node to the most current, but remember the base
@@ -65,7 +65,7 @@ void add_mandatory(ctest_t* harn,test_t* test) {
 			}
 			harn->mandatory->next = malloc(sizeof(holder_t));
 			if(harn->mandatory->next == NULL) {
-				printf("Error allocating new holder for test %s in harness %s. Exiting now", test->name, harn->name);
+				printf("Error allocating new holder for test %s in harness %s. Exiting now\n", test->name, harn->name);
 				exit(EXIT_FAILURE);
 			}
 			// Switch the current test node to the most current, but remember the base
@@ -83,7 +83,7 @@ void add_optional(ctest_t* harn,test_t* test) {
 		if(harn->optional->next == NULL) {
 			harn->optional->next = malloc(sizeof(holder_t));
 			if(harn->optional->next == NULL) {
-				printf("Error allocating new holder for test %s in harness %s. Exiting now", test->name, harn->name);
+				printf("Error allocating new holder for test %s in harness %s. Exiting now\n", test->name, harn->name);
 				exit(EXIT_FAILURE);
 			}
 			// Switch the current test node to the most current, but remember the base
@@ -100,7 +100,7 @@ void add_optional(ctest_t* harn,test_t* test) {
 			}
 			harn->optional->next = malloc(sizeof(holder_t));
 			if(harn->optional->next == NULL) {
-				printf("Error allocating new holder for test %s in harness %s. Exiting now", test->name, harn->name);
+				printf("Error allocating new holder for test %s in harness %s. Exiting now\n", test->name, harn->name);
 				exit(EXIT_FAILURE);
 			}
 			// Switch the current test node to the most current, but remember the base
@@ -117,63 +117,70 @@ int run_tests(ctest_t * harn, int fails) {
 	}
 	int num_fails = 0;
 	int num_tests = 1;
-	printf("Started running mandatory tests for harness %s.", harn->name);
+	printf("Started running mandatory tests for harness %s.\n", harn->name);
 	holder_t* cur_hold = harn->mandatory->base;
 	while(num_fails < fails) {
 		test_t* cur = cur_hold->test;
 		if(cur == NULL) {
-			printf("Error: Mandatory test node # %d found with no associated test in harness %s. Exiting now.",
+			printf("Error: Mandatory test node # %d found with no associated test in harness %s. Exiting now.\n",
 				   num_tests, harn->name);
 			exit(EXIT_FAILURE);	
 		}
-		printf("Preparing to run test # %d, (%s)", num_tests, cur->name);
+		printf("Preparing to run test # %d (%s)\n", num_tests, cur->name);
 		int res = cur->test();
 		if(res < 0) {
-			printf("Test # %d (%s) failed (code %d).", num_tests, cur->name, res);
+			printf("Test # %d (%s) failed (code %d).\n", num_tests, cur->name, res);
 			num_fails++;
 		} else {
 			if(res != 0) {
-				printf("Test # %d (%s) passed with a warning (code %d).", num_tests, cur->name, res);
+				printf("Test # %d (%s) passed with a warning (code %d).\n", num_tests, cur->name, res);
 			} else {
-				printf("Test # %d (%s) passed.", num_tests, cur->name);
+				printf("Test # %d (%s) passed.\n", num_tests, cur->name);
 			}
 		}
 		if(cur_hold->next == NULL) {
-			printf("Finished running %d mandatory tests. %d out of %d (%d)%% passed.", num_tests,
-				   num_tests - num_fails, num_tests, ((num_tests - num_fails) / num_tests));
+			printf("Finished running %d mandatory tests. %d out of %d (%f)%% passed.\n", 
+			num_tests, num_tests - num_fails, 
+			num_tests, 100 - ((double) num_fails / 
+			num_tests * 100));
 			break;
 		} else {
 			cur_hold = cur_hold->next;
 			num_tests++;
 		}
 	}
+	
 	if(num_fails >= fails) {
-		printf("Error: Too many (%d) tests failed to continue running tests.", num_fails);
+		printf("Error: Too many (%d) tests failed to continue running tests.\n", num_fails);
 		return num_fails;
 	} else {
-		printf("Started running optional tests for harness %s.", harn->name);
+		printf("Started running optional tests for harness %s.\n", harn->name);
 		cur_hold = harn->optional->base;
 		int opt_num = 1;
+		if(cur_hold->test == NULL) {
+			printf("No optional tests.\n");
+			return num_fails;
+		}
 		while(num_fails < fails) {
 			test_t* cur = cur_hold->test;
 			if(cur == NULL) {
-				printf("Error: Optional test node # %d found with no associated test in harness %s. Exiting now.",
+				printf("Error: Optional test node # %d found with no associated test in harness %s. Exiting now.\n",
 					   opt_num, harn->name);
 				exit(EXIT_FAILURE);	
 			}
-			printf("Preparing to run test # %d, (%s)", opt_num, cur->name);
+			printf("Preparing to run test # %d, (%s)\n", opt_num, cur->name);
 			int res = cur->test();
 			if(res < 0) {
-				printf("Test # %d (%s) failed (code %d).", opt_num, cur->name, res);
+				printf("Test # %d (%s) failed (code %d).\n", opt_num, cur->name, res);
 			} else {
 				if(res != 0) {
-					printf("Test # %d (%s) passed with a warning (code %d).", opt_num, cur->name, res);
+					printf("Test # %d (%s) passed with a warning (code %d).\n", opt_num, cur->name, res);
 				} else {
-					printf("Test # %d (%s) passed.", opt_num, cur->name);
+					printf("Test # %d (%s) passed.\n", opt_num, cur->name);
 				}
 			}
 			if(cur_hold->next == NULL) {
-				printf("Finished running %d optional tests. %d out of %d (%d)%% passed.", opt_num,
+				printf("Finished running %d optional tests. %d out of %d (%d)%% passed.\n", opt_num,
 					   opt_num - num_fails, opt_num, ((opt_num - num_fails) / opt_num));
 				break;
 			} else {
