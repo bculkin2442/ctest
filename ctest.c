@@ -41,6 +41,11 @@ ctest_t* ctest_init(char* name,FILE * outp) {
 	return new;
 }
 
+void setlookup(ctest_t* harn,lookupfun_t err, lookupfun_t warn) {
+	harn->error_convert = err;
+	harn->warn_convert = warn;
+}
+
 void add_mandatory(ctest_t* harn,test_t* test) {
 	if(harn->mandatory->test == NULL) {
 		harn->mandatory->test = test;
@@ -130,10 +135,16 @@ int run_tests(ctest_t * harn, int fails) {
 		int res = cur->test();
 		if(res < 0) {
 			printf("Test # %d (%s) failed (code %d).\n", num_tests, cur->name, res);
+			if(harn->error_convert != NULL)
+				printf("Code explanation: %s\n", 
+				harn->error_convert(res));
 			num_fails++;
 		} else {
 			if(res != 0) {
 				printf("Test # %d (%s) passed with a warning (code %d).\n", num_tests, cur->name, res);
+				if(harn->warn_convert != NULL)
+					printf("Code explanation: %s\n", 
+					harn->warn_convert(res));
 			} else {
 				printf("Test # %d (%s) passed.\n", num_tests, cur->name);
 			}
@@ -172,9 +183,15 @@ int run_tests(ctest_t * harn, int fails) {
 			int res = cur->test();
 			if(res < 0) {
 				printf("Test # %d (%s) failed (code %d).\n", opt_num, cur->name, res);
+				if(harn->error_convert != NULL)
+					printf("Code explanation: %s\n", 
+					harn->error_convert(res));
 			} else {
 				if(res != 0) {
 					printf("Test # %d (%s) passed with a warning (code %d).\n", opt_num, cur->name, res);
+					if(harn->warn_convert != NULL)
+						printf("Code explanation: %s\n", 
+						harn->warn_convert(res));
 				} else {
 					printf("Test # %d (%s) passed.\n", opt_num, cur->name);
 				}

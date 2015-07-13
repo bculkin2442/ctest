@@ -54,6 +54,10 @@ typedef struct ctest_t {
 	holder_t* mandatory;
 	// Optional tests - tests that SHOULD pass
 	holder_t* optional;
+	// Lookup to convert errors to strings
+	lookupfun_t error_convert;
+	// Lookup to convert warnings to strings
+	lookupfun_t warn_convert;
 	// Place to send test results
 	FILE* outp;
 } ctest_t;
@@ -65,6 +69,13 @@ typedef struct ctest_t {
 // Return
 //   A valid pointer to a harness.
 extern ctest_t* ctest_init(char* name, FILE* outp);
+
+// Specify the lookup functions for a test harness
+// Parameters
+//	 harn - harness to set lookup functions of
+//	 err  - lookup function to use for errors
+//	 warn - lookup function to use for warnings
+extern void setlookup(ctest_t* harn, lookupfun_t err, lookupfun_t warn);
 
 // Add a mandatory test that MUST succede
 // Parameters
